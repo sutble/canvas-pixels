@@ -13,6 +13,19 @@ const mouse = {
     radius: 150
 }
 
+function makePixelArray(data, width){
+    let reshapedArray = []
+    for (i = 0; i < data.length; i+=4){
+        pixel = [data[i], data[i+1], data[i+2], data[i+3]]
+        let y = Math.floor(i/(width*4));
+        if (reshapedArray.length - 1 < y){
+            reshapedArray.push([])
+        }
+        reshapedArray[y].push(pixel);        
+    }
+    return reshapedArray;
+}
+
 class Particle {
     constructor(x,y){
         this.x = x
@@ -35,25 +48,19 @@ class Particle {
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
         let distance = Math.sqrt(dx*dx + dy*dy);
+        let ax = dx/distance;
+        let ay = dy/distance;
+        let force = (mouse.radius - distance)/mouse.radius
         if (distance <= mouse.radius){
-            this.size = 10;
+            this.x -=  force * ax * this.density;
+            this.y -= force * ay * this.density;
         }
         else {
-            this.size = 3;
+            this.x -= (this.x - this.og_x)/10;
+            this.y -= (this.y - this.og_y)/10;
         }
     }
 }
-
-function init(){
-    particleArray = []
-    for (let i = 0; i < 500; i++){
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        particleArray.push(new Particle(x,y))
-    }
-}
-
-init();
 
 window.addEventListener('mousemove', function(event){
     mouse.x = event.x
@@ -62,9 +69,28 @@ window.addEventListener('mousemove', function(event){
 
 ctx.fillStyle = 'white';
 ctx.font = '90px Verdana';
-ctx.fillText('A', 0, 40);
-const data = ctx.getImageData(0,0,canvas.width,canvas.height);
-console.log(data);
+ctx.fillText('Aditya Garg', 50, 100);
+const textCoordinates = ctx.getImageData(0,0,150,100);
+console.log(textCoordinates);
+let pixelArray = makePixelArray(textCoordinates.data, 150);
+console.log(canvas.height, canvas.width)
+console.log(pixelArray.length, pixelArray[0].length)
+console.log(pixelArray)
+function init(){
+    particleArray = []
+    for (let i = 0,height = pixelArray.length; i < height; i++){
+        for (let j = 0, width=pixelArray[i].length; j < width; j++){
+            console.log(i,j,pixelArray[i][j]);
+            if (pixelArray[i][j][3] > 128){
+                particleArray.push(new Particle(i*4,j*4));
+                
+            }
+        }
+    }
+}
+
+init();
+//console.log(particleArray)
 
 function animate(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
