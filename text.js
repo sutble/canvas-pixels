@@ -68,11 +68,11 @@ window.addEventListener('mousemove', function(event){
 });
 
 ctx.fillStyle = 'white';
-ctx.font = '90px Verdana';
-ctx.fillText('Aditya Garg', 50, 100);
-const textCoordinates = ctx.getImageData(0,0,150,100);
+ctx.font = '90px Leichenhaus';
+ctx.fillText('VENOM', 60, 100);
+const textCoordinates = ctx.getImageData(0,0,canvas.width,canvas.height);
 console.log(textCoordinates);
-let pixelArray = makePixelArray(textCoordinates.data, 150);
+let pixelArray = makePixelArray(textCoordinates.data, canvas.width);
 console.log(canvas.height, canvas.width)
 console.log(pixelArray.length, pixelArray[0].length)
 console.log(pixelArray)
@@ -80,17 +80,16 @@ function init(){
     particleArray = []
     for (let i = 0,height = pixelArray.length; i < height; i++){
         for (let j = 0, width=pixelArray[i].length; j < width; j++){
-            console.log(i,j,pixelArray[i][j]);
-            if (pixelArray[i][j][3] > 128){
-                particleArray.push(new Particle(i*4,j*4));
-                
+            if (pixelArray[i][j][3] > 253){
+                if (Math.random() > 0.75) {
+                particleArray.push(new Particle(j*4,i*4));
+                }
             }
         }
     }
 }
 
 init();
-//console.log(particleArray)
 
 function animate(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
@@ -98,7 +97,26 @@ function animate(){
         particleArray[i].draw();
         particleArray[i].update();
     }
+    connect();
     requestAnimationFrame(animate);
+}
+
+function connect(){
+    for (i=0; i<particleArray.length; i++){
+        for (j=i+1; j<particleArray.length; j++){
+            const particle1 = particleArray[i];
+            const particle2 = particleArray[j];
+            const distance = Math.sqrt((particle1.x - particle2.x)**2 + (particle1.y-particle2.y)**2)
+            if (distance < 15) {
+                ctx.strokeStyle = "white"
+                ctx.lineWidth = 2
+                ctx.beginPath()
+                ctx.moveTo(particle1.x, particle1.y)
+                ctx.lineTo(particle2.x, particle2.y);
+                ctx.stroke()
+            }
+        }
+    }
 }
 
 animate();
